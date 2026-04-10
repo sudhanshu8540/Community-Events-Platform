@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gather — Community Events & Meetups</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- AUTH MODAL -->
+  <div id="authModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeAuth()">✕</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+        <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+      <div id="loginForm" class="auth-form">
+        <h2>Welcome back</h2>
+        <p class="auth-sub">Sign in to discover and join events</p>
+        <input type="email" id="loginEmail" placeholder="Email address" />
+        <input type="password" id="loginPassword" placeholder="Password" />
+        <button class="btn-primary full" onclick="handleLogin()">Sign In</button>
+        <p class="auth-footer">Don't have an account? <a href="#" onclick="switchTab('signup')">Sign up</a></p>
+      </div>
+      <div id="signupForm" class="auth-form hidden">
+        <h2>Join Gather</h2>
+        <p class="auth-sub">Create your account to get started</p>
+        <div class="input-row">
+          <input type="text" id="signupFirst" placeholder="First name" />
+          <input type="text" id="signupLast" placeholder="Last name" />
+        </div>
+        <input type="email" id="signupEmail" placeholder="Email address" />
+        <input type="password" id="signupPassword" placeholder="Create password" />
+        <input type="text" id="signupCity" placeholder="Your city (e.g. Mumbai)" />
+        <button class="btn-primary full" onclick="handleSignup()">Create Account</button>
+        <p class="auth-footer">Already have an account? <a href="#" onclick="switchTab('login')">Sign in</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE EVENT MODAL -->
+  <div id="createModal" class="modal-overlay hidden">
+    <div class="modal-box wide">
+      <button class="modal-close" onclick="closeCreate()">✕</button>
+      <h2>Create New Event</h2>
+      <p class="auth-sub">Share your event with the community</p>
+      <div class="form-grid">
+        <div class="form-field full">
+          <label>Event Title</label>
+          <input type="text" id="evTitle" placeholder="Give your event a great name" />
+        </div>
+        <div class="form-field full">
+          <label>Description</label>
+          <textarea id="evDesc" rows="3" placeholder="Tell people what to expect..."></textarea>
+        </div>
+        <div class="form-field">
+          <label>Category</label>
+          <select id="evCategory">
+            <option value="">Select category</option>
+            <option>🏃 Marathon</option><option>⚽ Sports</option><option>💻 Tech</option>
+            <option>🎵 Music</option><option>📚 Books</option><option>🎨 Art</option>
+            <option>🍕 Food</option><option>🧘 Wellness</option><option>✈️ Travel</option>
+            <option>🎭 Culture</option><option>🐾 Pets</option><option>🌿 Nature</option>
+            <option>🎮 Gaming</option><option>💼 Business</option><option>📸 Photography</option>
+            <option>🎬 Film</option><option>🏔️ Adventure</option><option>🤝 Volunteering</option>
+            <option>👨‍👩‍👧 Family</option><option>🔬 Science</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Max Participants</label>
+          <input type="number" id="evMax" placeholder="e.g. 50" min="1" />
+        </div>
+        <div class="form-field">
+          <label>Date</label>
+          <input type="date" id="evDate" />
+        </div>
+        <div class="form-field">
+          <label>Time</label>
+          <input type="time" id="evTime" />
+        </div>
+        <div class="form-field full">
+          <label>Location</label>
+          <input type="text" id="evLocation" placeholder="Venue name, City" />
+        </div>
+        <div class="form-field">
+          <label>Price (₹)</label>
+          <input type="number" id="evPrice" placeholder="0 for free" min="0" />
+        </div>
+        <div class="form-field">
+          <label>Event Image URL (optional)</label>
+          <input type="text" id="evImage" placeholder="https://..." />
+        </div>
+      </div>
+      <button class="btn-primary full" onclick="handleCreateEvent()">Publish Event</button>
+    </div>
+  </div>
+
+  <!-- EVENT DETAIL MODAL -->
+  <div id="detailModal" class="modal-overlay hidden">
+    <div class="modal-box wide" id="detailContent"></div>
+  </div>
+
+  <!-- PARTICIPANTS MODAL -->
+  <div id="participantsModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <button class="modal-close" onclick="document.getElementById('participantsModal').classList.add('hidden')">✕</button>
+      <h2>Participants</h2>
+      <div id="participantsList" class="participants-list"></div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="logo" onclick="showSection('home')">
+        <span class="logo-icon">◈</span> Gather
+      </a>
+      <div class="nav-links">
+        <a href="#" onclick="showSection('home')">Home</a>
+        <a href="#" onclick="showSection('discover')">Discover</a>
+        <a href="#" onclick="showSection('myevents')" id="myEventsLink" class="hidden">My Events</a>
+      </div>
+      <div class="nav-actions">
+        <button class="dark-toggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+        <div id="guestActions">
+          <button class="btn-ghost" onclick="openAuth('login')">Login</button>
+          <button class="btn-primary" onclick="openAuth('signup')">Sign Up</button>
+        </div>
+        <div id="userActions" class="hidden">
+          <button class="btn-secondary" onclick="openCreate()">+ Create Event</button>
+          <div class="avatar-wrap" onclick="toggleUserMenu()">
+            <div class="avatar" id="navAvatar">U</div>
+            <div class="user-menu hidden" id="userMenu">
+              <div class="user-menu-name" id="userMenuName">User</div>
+              <a href="#" onclick="showSection('myevents')">My Events</a>
+              <a href="#" onclick="showSection('joined')">Joined Events</a>
+              <a href="#" onclick="handleLogout()" class="logout-link">Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+    </div>
+    <div class="mobile-menu hidden" id="mobileMenu">
+      <a href="#" onclick="showSection('home');toggleMobileMenu()">Home</a>
+      <a href="#" onclick="showSection('discover');toggleMobileMenu()">Discover</a>
+      <a href="#" onclick="openAuth('login');toggleMobileMenu()" id="mobileLogin">Login</a>
+      <a href="#" onclick="openAuth('signup');toggleMobileMenu()" id="mobileSignup">Sign Up</a>
+      <a href="#" onclick="openCreate();toggleMobileMenu()" id="mobileCreate" class="hidden">+ Create Event</a>
+      <a href="#" onclick="handleLogout();toggleMobileMenu()" id="mobileLogout" class="hidden">Logout</a>
+    </div>
+  </nav>
+
+  <!-- HOME SECTION -->
+  <div id="homeSection">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-blobs">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
+      </div>
+      <div class="hero-content">
+        <div class="hero-badge">🌟 Discover Your Community</div>
+        <h1 class="hero-title">Find events<br /><em>worth showing up for</em></h1>
+        <p class="hero-sub">Connect with thousands of locals at marathons, tech meetups, book clubs, cultural festivals, and more. Your next great experience is one click away.</p>
+        <div class="hero-search-bar">
+          <span class="search-icon-hero">🔍</span>
+          <input type="text" id="heroSearch" placeholder="Search events, cities, categories..." onkeyup="heroSearchHandler(event)" />
+          <button class="btn-primary" onclick="performHeroSearch()">Search</button>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><span class="stat-num" id="totalEvents">0</span><span>Events</span></div>
+          <div class="stat-div"></div>
+          <div class="stat"><span class="stat-num" id="totalUsers">0</span><span>Members</span></div>
+          <div class="stat-div"></div>
+          <div class="stat"><span class="stat-num">20+</span><span>Categories</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="floating-cards">
+          <div class="fc fc1"><span>🏃</span> City Marathon<br/><small>2.3k joined</small></div>
+          <div class="fc fc2"><span>💻</span> AI Hackathon<br/><small>Tech • Tomorrow</small></div>
+          <div class="fc fc3"><span>🎸</span> Live Music Night<br/><small>Free entry</small></div>
+          <div class="fc fc4"><span>🧘</span> Yoga & Chill<br/><small>100 spots left</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="section categories-section">
+      <div class="section-header">
+        <div class="section-tag">Browse by interest</div>
+        <h2>Explore Categories</h2>
+        <p>From adrenaline to art — there's a community for every passion</p>
+      </div>
+      <div class="categories-grid" id="categoriesGrid"></div>
+    </section>
+
+    <!-- FEATURED EVENTS -->
+    <section class="section featured-section">
+      <div class="section-header">
+        <div class="section-tag">Hand-picked</div>
+        <h2>Featured Events</h2>
+        <p>Don't miss these trending community highlights</p>
+      </div>
+      <div class="events-grid" id="featuredGrid"></div>
+    </section>
+
+    <!-- UPCOMING EVENTS -->
+    <section class="section upcoming-section">
+      <div class="section-header-row">
+        <div>
+          <div class="section-tag">Coming soon</div>
+          <h2>Upcoming Events</h2>
+        </div>
+        <div class="filter-bar">
+          <select id="filterCategory" onchange="applyFilters()">
+            <option value="">All Categories</option>
+            <option>🏃 Marathon</option><option>⚽ Sports</option><option>💻 Tech</option>
+            <option>🎵 Music</option><option>📚 Books</option><option>🎨 Art</option>
+            <option>🍕 Food</option><option>🧘 Wellness</option><option>✈️ Travel</option>
+            <option>🎭 Culture</option>
+          </select>
+          <select id="filterDate" onchange="applyFilters()">
+            <option value="">Any Date</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+          <select id="filterPrice" onchange="applyFilters()">
+            <option value="">Any Price</option>
+            <option value="free">Free</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+      </div>
+      <div class="events-grid" id="upcomingGrid"></div>
+      <div class="load-more-wrap">
+        <button class="btn-outline" onclick="loadMore()">Load More Events</button>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="logo"><span class="logo-icon">◈</span> Gather</div>
+          <p>Bringing communities together through shared experiences, local events, and meaningful connections.</p>
+          <div class="social-links">
+            <a href="#" title="Twitter">🐦</a>
+            <a href="#" title="Instagram">📸</a>
+            <a href="#" title="LinkedIn">💼</a>
+            <a href="#" title="Facebook">👥</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <a href="#">Browse Events</a>
+          <a href="#">Create Event</a>
+          <a href="#">Categories</a>
+          <a href="#">Featured</a>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <a href="#">About Us</a>
+          <a href="#">Blog</a>
+          <a href="#">Partners</a>
+          <a href="#">Press</a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="#">Help Center</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Contact Us</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Gather. Made with ♥ for communities everywhere.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- DISCOVER SECTION -->
+  <div id="discoverSection" class="hidden">
+    <section class="inner-page">
+      <div class="inner-header">
+        <h1>Discover Events</h1>
+        <p>Explore all events in your community</p>
+        <div class="search-bar-inner">
+          <span>🔍</span>
+          <input type="text" id="discoverSearch" placeholder="Search by title, location, category..." oninput="renderDiscover()" />
+        </div>
+      </div>
+      <div class="filter-row">
+        <select id="dFilterCategory" onchange="renderDiscover()">
+          <option value="">All Categories</option>
+          <option>🏃 Marathon</option><option>⚽ Sports</option><option>💻 Tech</option>
+          <option>🎵 Music</option><option>📚 Books</option><option>🎨 Art</option>
+          <option>🍕 Food</option><option>🧘 Wellness</option><option>✈️ Travel</option>
+          <option>🎭 Culture</option><option>🐾 Pets</option><option>🌿 Nature</option>
+          <option>🎮 Gaming</option><option>💼 Business</option><option>📸 Photography</option>
+          <option>🎬 Film</option><option>🏔️ Adventure</option><option>🤝 Volunteering</option>
+          <option>👨‍👩‍👧 Family</option><option>🔬 Science</option>
+        </select>
+        <select id="dFilterDate" onchange="renderDiscover()">
+          <option value="">Any Date</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+        </select>
+        <select id="dFilterPrice" onchange="renderDiscover()">
+          <option value="">Any Price</option>
+          <option value="free">Free</option>
+          <option value="paid">Paid</option>
+        </select>
+      </div>
+      <div class="events-grid" id="discoverGrid"></div>
+      <div id="discoverEmpty" class="empty-state hidden">
+        <div class="empty-icon">🔍</div>
+        <h3>No events found</h3>
+        <p>Try adjusting your search or filters</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- MY EVENTS SECTION -->
+  <div id="myeventsSection" class="hidden">
+    <section class="inner-page">
+      <div class="inner-header">
+        <h1>My Events</h1>
+        <p>Events you've created and are organizing</p>
+        <button class="btn-primary" onclick="openCreate()">+ Create New Event</button>
+      </div>
+      <div class="events-grid" id="myEventsGrid"></div>
+      <div id="myEventsEmpty" class="empty-state hidden">
+        <div class="empty-icon">📅</div>
+        <h3>No events yet</h3>
+        <p>Create your first event and bring people together!</p>
+        <button class="btn-primary" onclick="openCreate()">Create Event</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- JOINED EVENTS SECTION -->
+  <div id="joinedSection" class="hidden">
+    <section class="inner-page">
+      <div class="inner-header">
+        <h1>Events I've Joined</h1>
+        <p>Your upcoming experiences</p>
+      </div>
+      <div class="events-grid" id="joinedGrid"></div>
+      <div id="joinedEmpty" class="empty-state hidden">
+        <div class="empty-icon">🎟️</div>
+        <h3>No joined events</h3>
+        <p>Discover events and hit Join to save them here!</p>
+        <button class="btn-primary" onclick="showSection('discover')">Explore Events</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
