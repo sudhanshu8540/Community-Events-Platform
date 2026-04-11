@@ -26,7 +26,7 @@ A web-based platform that allows users to create, join, and manage community eve
 
 ### 🔹 Sudhanshu Ranjan (Team Leader)
 - Project planning & idea finalization
-- Backend development (API + Database)
+- Backend development 
 - Deployment & integration
 
 ### 🔹 Utkarsh Baranwal
